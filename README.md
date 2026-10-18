@@ -1,17 +1,22 @@
 
-# VibeTube — Prototyp
+VibeTube – deine private Video-Sammlung im Browser
 
-## Starten
-1. Entpacke `VibeTube.zip`.
-2. Öffne `index.html` in einem aktuellen Browser.
+DATEIEN
+- index.html: Seitenaufbau
+- style.css: Design
+- script.js: Suche, Video-Upload und Wiedergabe
 
-## Im Prototyp enthalten
-- Video-Feed mit Kategorien und Suche
-- Video-Vorschau
-- Likes und Kommentare
-- Kanalansicht
-- Video-Einträge hinzufügen und eigene Einträge löschen
-- Lokale Speicherung im Browser (`localStorage`)
+SO VERÖFFENTLICHST DU DIESE VERSION AUF GITHUB PAGES
+1. Entpacke diese ZIP-Datei.
+2. Öffne dein GitHub-Repository MeneLene3/VibeTube.
+3. Klicke auf Add file > Upload files.
+4. Lade index.html, style.css und script.js aus diesem Ordner hoch und bestätige mit Commit changes. Bestätige das Ersetzen vorhandener Dateien.
+5. Warte kurz und lade deine Webseite neu.
 
-## Wichtig
-Dies ist ein kostenloser Frontend-Prototyp. Es gibt noch keinen Server und keine echten Benutzerkonten. Videos und Kommentare sind nur in diesem Browser gespeichert. Eine ausgewählte Videodatei wird nicht hochgeladen und ist nicht für andere Nutzer sichtbar. Für öffentliche Accounts, gemeinsame Kommentare und echtes Hosting braucht es später ein Backend. Das Layout ist absichtlich auf Desktop ausgelegt und nicht für Handy-Bildschirme optimiert.
+VIDEO-UPLOAD – WICHTIG
+- Beispiel-/Fake-Videos wurden entfernt. Die Startseite beginnt leer.
+- Wähle im Formular eine echte Videodatei aus, um sie hinzuzufügen und abzuspielen.
+- Videos werden in IndexedDB im aktuellen Browser auf diesem Gerät gespeichert.
+- Videos sind NICHT öffentlich und werden nicht an GitHub hochgeladen. Andere Personen und andere Geräte können sie nicht sehen.
+- Wenn du Browserdaten löschst oder einen anderen Browser/ein anderes Gerät nutzt, können diese Videos fehlen.
+- Für echte öffentliche Uploads für alle Besucher brauchst du später einen Server oder einen Speicherdienst.

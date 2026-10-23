@@ -1,33 +1,49 @@
-<!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>VibeTube</title><link rel="stylesheet" href="style.css"></head>
-<body>
-<header class="topbar">
-  <button class="icon-btn" id="menuBtn" aria-label="Menü">☰</button>
-  <a class="brand" href="#"><span class="brand-mark">▶</span> VibeTube</a>
-  <form class="searchbar" id="searchForm"><input id="searchInput" placeholder="Videos suchen…" autocomplete="off"><button aria-label="Suchen">⌕</button></form>
-  <div class="top-actions"><button class="upload-btn" id="openUpload">＋ Erstellen</button><button class="avatar" id="openChannel">V</button></div>
-</header>
-<aside class="sidebar" id="sidebar">
-  <button class="side-link active" data-filter="Alle"><span>⌂</span> Startseite</button>
-  <button class="side-link" data-filter="Shorts"><span>▣</span> Shorts</button>
-  <button class="side-link" data-filter="Abos"><span>▤</span> Abos</button><hr>
-  <p class="side-heading">Entdecken</p>
-  <button class="side-link" data-filter="Gaming"><span>🎮</span> Gaming</button>
-  <button class="side-link" data-filter="Musik"><span>♫</span> Musik</button>
-  <button class="side-link" data-filter="Lernen"><span>▤</span> Lernen</button>
-  <button class="side-link" data-filter="Comedy"><span>☻</span> Comedy</button>
-  <hr><button class="side-link" id="myChannelLink"><span>◉</span> Mein Kanal</button>
-  <button class="side-link" id="likedLink"><span>♡</span> Gefällt mir</button>
-  <div class="sidebar-note">Dein Platz für Videos, Ideen und gute Vibes. ✨</div>
-</aside>
-<main class="main">
-  <nav class="chips" id="chips"><button class="chip selected" data-filter="Alle">Alle</button><button class="chip" data-filter="Gaming">Gaming</button><button class="chip" data-filter="Musik">Musik</button><button class="chip" data-filter="Lernen">Lernen</button><button class="chip" data-filter="Comedy">Comedy</button><button class="chip" data-filter="Shorts">Shorts</button><button class="chip" data-filter="Kreativ">Kreativ</button></nav>
-  <section class="welcome" id="welcome"><div><p class="eyebrow">WILLKOMMEN BEI</p><h1>Deine Videos. <span>Dein Vibe.</span></h1><p>Entdecke etwas Neues oder füge dein erstes Video hinzu.</p></div><button class="primary-btn" id="heroUpload">＋ Video hinzufügen</button></section>
-  <div class="section-top"><h2 id="sectionTitle">Empfohlen</h2><span id="resultCount"></span></div>
-  <section class="video-grid" id="videoGrid"></section>
-  <section class="empty-state hidden" id="emptyState"><div class="empty-icon">⌕</div><h2>Nichts gefunden</h2><p>Versuche einen anderen Suchbegriff oder wähle eine andere Kategorie.</p></section>
-</main>
-<div class="modal-backdrop hidden" id="watchModal"><section class="modal watch-modal"><button class="close-btn" data-close="watchModal">✕</button><div class="player" id="playerArea"><div class="player-symbol">▶</div><p>Video-Vorschau</p><small>Demo-Prototyp</small></div><div class="watch-details"><h2 id="watchTitle"></h2><div class="watch-meta"><span id="watchChannel"></span><span id="watchViews"></span><button class="like-btn" id="watchLike">♡ Gefällt mir</button></div><p id="watchDescription"></p><hr><h3>Kommentare <span id="commentCount"></span></h3><form id="commentForm" class="comment-form"><input id="commentInput" maxlength="240" placeholder="Kommentar hinzufügen…" required><button type="submit">Kommentieren</button></form><div id="commentList" class="comment-list"></div></div></section></div>
-<div class="modal-backdrop hidden" id="uploadModal"><section class="modal form-modal"><button class="close-btn" data-close="uploadModal">✕</button><p class="eyebrow">DEIN KANAL</p><h2>Video hinzufügen</h2><p class="muted">Lade eine echte Videodatei hoch. Deine Videos werden nur in diesem Browser gespeichert und sind nicht öffentlich sichtbar.</p><form id="uploadForm" class="stack-form"><label>Videotitel<input id="uploadTitle" maxlength="90" required placeholder="z. B. Mein erster Vlog"></label><label>Kanalname<input id="uploadChannel" maxlength="40" required placeholder="Dein Kanalname"></label><label>Kategorie<select id="uploadCategory"><option>Gaming</option><option>Musik</option><option>Lernen</option><option>Comedy</option><option>Kreativ</option><option>Shorts</option><option>Vlog</option></select></label><label>Beschreibung<textarea id="uploadDescription" rows="3" maxlength="500" placeholder="Worum geht es in deinem Video?"></textarea></label><label>Videodatei (erforderlich)<input id="uploadFile" type="file" accept="video/*" required></label><div class="file-note" id="fileNote">Bitte wähle eine echte Videodatei aus.</div><button class="primary-btn full" type="submit">Video hochladen</button></form></section></div>
-<div class="modal-backdrop hidden" id="channelModal"><section class="modal form-modal channel-modal"><button class="close-btn" data-close="channelModal">✕</button><div class="channel-banner"></div><div class="channel-avatar">V</div><h2 id="channelHeading">Dein Kanal</h2><p class="muted">Dein persönlicher Platz auf VibeTube.</p><div class="channel-stats"><div><strong id="channelVideoCount">0</strong><span>Videos</span></div><div><strong id="channelLikeCount">0</strong><span>Likes</span></div></div><h3>Meine Videos</h3><div id="myVideos" class="my-videos"></div><button class="primary-btn full" id="channelUpload">＋ Video hinzufügen</button></section></div>
-<div class="toast hidden" id="toast"></div><script src="script.js"></script></body></html>
+☰ ▶ VibeTube
+⌕
+＋ ErstellenV
+⌂ Startseite ▣ Shorts ▤ Abos
+
+Entdecken
+🎮 Gaming ♫ Musik ▤ Lernen ☻ Comedy
+
+◉ Mein Kanal ♡ Gefällt mir
+Dein Platz für Videos, Ideen und gute Vibes. ✨
+AlleGamingMusikLernenComedyShortsKreativ
+WILLKOMMEN BEI
+Deine Videos. Dein Vibe.
+Entdecke etwas Neues oder füge dein erstes Video hinzu.
+＋ Video hinzufügen
+Empfohlen
+
+⌕
+Nichts gefunden
+Versuche einen anderen Suchbegriff oder wähle eine andere Kategorie.
+✕
+▶
+Video-Vorschau
+Demo-Prototyp
+
+♡ Gefällt mir
+
+
+Kommentare
+Kommentieren
+
+✕
+DEIN KANAL
+Video hinzufügen
+Lade eine echte Videodatei hoch. Deine Videos werden nur in diesem Browser gespeichert und sind nicht öffentlich sichtbar.
+VideotitelKanalnameKategorieGamingMusikLernenComedyKreativShortsVlogBeschreibungVideodatei (erforderlich)
+Bitte wähle eine echte Videodatei aus.
+Video hochladen
+✕
+
+V
+Dein Kanal
+Dein persönlicher Platz auf VibeTube.
+0Videos
+0Likes
+Meine Videos
+
+＋ Video hinzufügen
+

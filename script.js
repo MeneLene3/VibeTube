@@ -1,42 +1,49 @@
-const $ = id => document.getElementById(id);
-const DB_NAME = "vibetube-media";
-const DB_STORE = "videos";
-let videos = load("vibetube-videos", []).filter(v => v && v.mine && v.fileId);
-let likedIds = load("vibetube-likes", []);
-let commentsById = load("vibetube-comments", {});
-let currentFilter = "Alle", currentSearch = "", currentVideoId = null, showLikedOnly = false;
-function load(key, fallback){try{const value=localStorage.getItem(key);return value?JSON.parse(value):fallback}catch{return fallback}}
-function save(){localStorage.setItem("vibetube-videos",JSON.stringify(videos));localStorage.setItem("vibetube-likes",JSON.stringify(likedIds));localStorage.setItem("vibetube-comments",JSON.stringify(commentsById))}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function fmt(n){return n>=1000000?(n/1000000).toFixed(1).replace(".",",")+" Mio.":n>=1000?(n/1000).toFixed(n>=10000?0:1).replace(".",",")+" Tsd.":String(n)}
-function toast(message){$("toast").textContent=message;$("toast").classList.remove("hidden");clearTimeout(toast.timer);toast.timer=setTimeout(()=>$("toast").classList.add("hidden"),2500)}
-function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(DB_STORE))req.result.createObjectStore(DB_STORE,{keyPath:"id"})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
-async function storeFile(id,file){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,"readwrite");tx.objectStore(DB_STORE).put({id,file});tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
-async function getFile(id){const db=await openDB();return new Promise((resolve,reject)=>{const req=db.transaction(DB_STORE,"readonly").objectStore(DB_STORE).get(id);req.onsuccess=()=>{db.close();resolve(req.result?.file||null)};req.onerror=()=>{db.close();reject(req.error)}})}
-async function deleteFile(id){try{const db=await openDB();await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,"readwrite");tx.objectStore(DB_STORE).delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch{}}
-function visibleVideos(){return videos.filter(v=>{const matchFilter=currentFilter==="Alle"||currentFilter==="Abos"||v.category===currentFilter;const q=currentSearch.toLowerCase();const matchSearch=!q||[v.title,v.channel,v.category,v.description].join(" ").toLowerCase().includes(q);return matchFilter&&matchSearch&&(!showLikedOnly||likedIds.includes(v.id))})}
-function render(){const list=visibleVideos();$("videoGrid").innerHTML=list.map(v=>`<article class="video-card" data-open="${v.id}" tabindex="0" role="button" aria-label="Video ansehen: ${esc(v.title)}"><div class="thumbnail" style="background:linear-gradient(135deg,#171717,#343434)"><span class="thumb-emoji">▶</span><span class="thumb-label">DEIN VIDEO</span><span class="duration">VIDEO</span><div class="play-overlay"><span>▶</span></div></div><div class="video-info"><div class="channel-dot">${esc((v.channel||"V").slice(0,1).toUpperCase())}</div><div class="video-text"><h3>${esc(v.title)}</h3><p>${esc(v.channel)}</p><p>${fmt(v.views||0)} Aufrufe · Gerade eben</p></div><button class="more-btn" data-delete="${v.id}" title="Video löschen">⋮</button></div></article>`).join("");$("resultCount").textContent=list.length+ (list.length===1?" Video":" Videos");$("emptyState").classList.toggle("hidden",list.length>0);$("videoGrid").classList.toggle("hidden",list.length===0);$("sectionTitle").textContent=showLikedOnly?"Videos, die dir gefallen":currentSearch?`Suchergebnisse für „${currentSearch}“`:currentFilter==="Alle"?"Deine Videos":currentFilter;$("welcome").classList.toggle("hidden",currentSearch!==""||showLikedOnly||currentFilter!=="Alle");document.querySelectorAll("[data-filter]").forEach(b=>b.classList.toggle("selected",b.dataset.filter===currentFilter));renderChannel()}
-function openModal(id){$(id).classList.remove("hidden")}
-function closeModal(id){$(id).classList.add("hidden")}
-async function openWatch(id){const v=videos.find(x=>x.id===Number(id));if(!v)return;currentVideoId=v.id;$("watchTitle").textContent=v.title;$("watchChannel").textContent=v.channel;$("watchViews").textContent=fmt(v.views||0)+" Aufrufe";$("watchDescription").textContent=v.description||"Keine Beschreibung vorhanden.";const liked=likedIds.includes(v.id);$("watchLike").classList.toggle("liked",liked);$("watchLike").textContent=liked?"♥ Gefällt mir":"♡ Gefällt mir";$("playerArea").innerHTML='<div class="player-symbol">…</div><p>Video wird geladen …</p>';renderComments();openModal("watchModal");try{const file=await getFile(v.fileId);if(!file){$("playerArea").innerHTML='<p>Die Videodatei wurde in diesem Browser nicht gefunden. Lade sie bitte erneut hoch.</p>';return}const url=URL.createObjectURL(file);$("playerArea").innerHTML=`<video controls autoplay playsinline style="width:100%;height:100%;max-height:420px;background:#000" src="${url}"></video>`}catch{$("playerArea").innerHTML='<p>Die Videodatei konnte nicht geladen werden. Bitte lade sie erneut hoch.</p>'}}
-function renderComments(){const arr=commentsById[currentVideoId]||[];$("commentCount").textContent=arr.length?`(${arr.length})`:"(0)";$("commentList").innerHTML=arr.slice().reverse().map(c=>`<div class="comment"><small>${esc(c.name)} · gerade eben</small>${esc(c.text)}</div>`).join("")}
-function renderChannel(){const mine=videos;$("channelVideoCount").textContent=mine.length;$("channelLikeCount").textContent=mine.reduce((n,v)=>n+(likedIds.includes(v.id)?1:0),0);$("myVideos").innerHTML=mine.length?mine.map(v=>`<div class="my-video-row"><div class="mini-thumb">▶</div><div><strong>${esc(v.title)}</strong><small>${esc(v.category)} · ${fmt(v.views||0)} Aufrufe</small></div><button class="delete-btn" data-delete="${v.id}" title="Video löschen">✕</button></div>`).join(""):'<p class="muted">Du hast noch keine echten Videos hochgeladen. Klicke auf „Video hochladen“, um loszulegen!</p>'}
-function setFilter(filter){currentFilter=filter;showLikedOnly=false;document.querySelectorAll("[data-filter]").forEach(b=>b.classList.toggle("active",b.dataset.filter===filter));render()}
-$("searchForm").addEventListener("submit",e=>{e.preventDefault();currentSearch=$("searchInput").value.trim();render()});
-$("searchInput").addEventListener("input",()=>{currentSearch=$("searchInput").value.trim();render()});
-document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>setFilter(b.dataset.filter)));
-$("menuBtn").addEventListener("click",()=>document.body.classList.toggle("no-sidebar"));
-["openUpload","heroUpload","channelUpload"].forEach(id=>$(id).addEventListener("click",()=>{closeModal("channelModal");openModal("uploadModal")}));
-["openChannel","myChannelLink"].forEach(id=>$(id).addEventListener("click",()=>{renderChannel();openModal("channelModal")}));
-$("likedLink").addEventListener("click",()=>{showLikedOnly=true;currentSearch="";$("searchInput").value="";render()});
-document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>closeModal(b.dataset.close)));
-document.querySelectorAll(".modal-backdrop").forEach(back=>back.addEventListener("click",e=>{if(e.target===back)back.classList.add("hidden")}));
-async function removeVideo(id){const v=videos.find(x=>x.id===id);if(!v||!confirm("Dieses Video aus VibeTube in diesem Browser löschen?"))return;videos=videos.filter(x=>x.id!==id);likedIds=likedIds.filter(x=>x!==id);delete commentsById[id];await deleteFile(v.fileId);save();render();toast("Video gelöscht.")}
-$("videoGrid").addEventListener("click",e=>{const del=e.target.closest("[data-delete]");if(del){e.stopPropagation();removeVideo(Number(del.dataset.delete));return}const card=e.target.closest("[data-open]");if(card)openWatch(card.dataset.open)});
-$("videoGrid").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-open]"))openWatch(e.target.dataset.open)});
-$("myVideos").addEventListener("click",e=>{const b=e.target.closest("[data-delete]");if(b)removeVideo(Number(b.dataset.delete))});
-$("watchLike").addEventListener("click",()=>{if(currentVideoId===null)return;if(likedIds.includes(currentVideoId))likedIds=likedIds.filter(id=>id!==currentVideoId);else likedIds.push(currentVideoId);save();const liked=likedIds.includes(currentVideoId);$("watchLike").classList.toggle("liked",liked);$("watchLike").textContent=liked?"♥ Gefällt mir":"♡ Gefällt mir";renderChannel();toast(liked?"Zu „Gefällt mir“ hinzugefügt":"Like entfernt")});
-$("commentForm").addEventListener("submit",e=>{e.preventDefault();const text=$("commentInput").value.trim();if(!text||currentVideoId===null)return;commentsById[currentVideoId]=commentsById[currentVideoId]||[];commentsById[currentVideoId].push({name:"Du",text});$("commentInput").value="";save();renderComments();toast("Kommentar hinzugefügt")});
-$("uploadFile").addEventListener("change",()=>{const file=$("uploadFile").files[0];$("fileNote").textContent=file?`${file.name} ausgewählt (${(file.size/1024/1024).toFixed(1)} MB). Wird nur in diesem Browser gespeichert.`:"Bitte wähle eine echte Videodatei aus."});
-$("uploadForm").addEventListener("submit",async e=>{e.preventDefault();const file=$("uploadFile").files[0];if(!file){toast("Bitte wähle zuerst eine echte Videodatei aus.");return}if(!file.type.startsWith("video/")){toast("Bitte wähle eine Videodatei aus.");return}if(file.size>250*1024*1024){toast("Die Datei ist größer als 250 MB. Bitte wähle ein kleineres Video.");return}const id=Date.now();try{await storeFile(id,file)}catch{toast("Der Browser konnte die Datei nicht speichern. Prüfe den freien Speicherplatz.");return}const v={id,title:$("uploadTitle").value.trim(),channel:$("uploadChannel").value.trim(),category:$("uploadCategory").value,description:$("uploadDescription").value.trim(),views:0,fileId:id,mine:true};videos.unshift(v);save();$("uploadForm").reset();$("fileNote").textContent="Bitte wähle eine echte Videodatei aus.";closeModal("uploadModal");currentFilter="Alle";currentSearch="";showLikedOnly=false;$("searchInput").value="";render();toast("Echtes Video gespeichert – nur in diesem Browser!")});
-render();
+☰ ▶ VibeTube
+⌕
+＋ ErstellenV
+⌂ Startseite ▣ Shorts ▤ Abos
+
+Entdecken
+🎮 Gaming ♫ Musik ▤ Lernen ☻ Comedy
+
+◉ Mein Kanal ♡ Gefällt mir
+Dein Platz für Videos, Ideen und gute Vibes. ✨
+AlleGamingMusikLernenComedyShortsKreativ
+WILLKOMMEN BEI
+Deine Videos. Dein Vibe.
+Entdecke etwas Neues oder füge dein erstes Video hinzu.
+＋ Video hinzufügen
+Empfohlen
+
+⌕
+Nichts gefunden
+Versuche einen anderen Suchbegriff oder wähle eine andere Kategorie.
+✕
+▶
+Video-Vorschau
+Demo-Prototyp
+
+♡ Gefällt mir
+
+
+Kommentare
+Kommentieren
+
+✕
+DEIN KANAL
+Video hinzufügen
+Lade eine echte Videodatei hoch. Deine Videos werden nur in diesem Browser gespeichert und sind nicht öffentlich sichtbar.
+VideotitelKanalnameKategorieGamingMusikLernenComedyKreativShortsVlogBeschreibungVideodatei (erforderlich)
+Bitte wähle eine echte Videodatei aus.
+Video hochladen
+✕
+
+V
+Dein Kanal
+Dein persönlicher Platz auf VibeTube.
+0Videos
+0Likes
+Meine Videos
+
+＋ Video hinzufügen
+
